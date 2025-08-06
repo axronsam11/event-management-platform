@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:4.4
+    container_name: event-management-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=eventmanagement
+    networks:
+      - event-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/eventmanagement --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # MongoDB Express web-based admin interface (optional)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: event-management-mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
+    depends_on:
+      - mongodb
+    networks:
+      - event-network
+
+  # Spring Boot application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event-management-api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/eventmanagement
+      - JWT_SECRET=developmentSecretKey
+      - JWT_EXPIRATION=86400000
+      - SERVER_PORT=8080
+    depends_on:
+      - mongodb
+    networks:
+      - event-network
+
+networks:
+  event-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

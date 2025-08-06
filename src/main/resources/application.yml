@@ -1,0 +1,39 @@
+# Application Configuration
+spring:
+  application:
+    name: event-management-platform
+  
+  # MongoDB Atlas Configuration
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb+srv://username:password@cluster.mongodb.net/eventdb?retryWrites=true&w=majority}
+      auto-index-creation: true
+  
+  # Security Configuration
+  security:
+    jwt:
+      secret: ${JWT_SECRET:defaultSecretKeyForDevelopmentOnlyReplaceInProduction}
+      expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+
+# Server Configuration
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.eventmanagement: DEBUG
+    org.springframework.data.mongodb: INFO
+    org.springframework.security: INFO
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  packages-to-scan: com.eventmanagement.api.controller
